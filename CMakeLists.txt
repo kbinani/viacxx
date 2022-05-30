@@ -28,10 +28,10 @@ set(via_asset_files
   #end via_asset_files
 )
 add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/backward.hpp
-  COMMAND create-backward-converter ${CMAKE_CURRENT_SOURCE_DIR}/include/backward.hpp ${CMAKE_CURRENT_SOURCE_DIR}/deps/ViaBackwards/common/src/main/resources/assets/viabackwards/data
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/via/backward.hpp ${CMAKE_CURRENT_SOURCE_DIR}/src/backward.cxx
+  COMMAND create-backward-converter ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/deps/ViaBackwards/common/src/main/resources/assets/viabackwards/data
   DEPENDS create-backward-converter ${via_asset_files})
 
 add_custom_target(prepare-backward-converter
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/backward.hpp
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/via/backward.hpp ${CMAKE_CURRENT_SOURCE_DIR}/src/backward.cxx
   SOURCES ${via_asset_files})
