@@ -1,3 +1,6 @@
 [submodule "deps/ViaBackwards"]
 	path = deps/ViaBackwards
 	url = https://github.com/ViaVersion/ViaBackwards.git
+[submodule "deps/json"]
+	path = deps/json
+	url = https://github.com/nlohmann/json.git

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+(
+  cd "$(dirname "$0")"
+
+  via_start=$(cat CMakeLists.txt | grep -n '#begin via_asset_files' | cut -f1 -d:)
+  via_end=$(cat CMakeLists.txt | grep -n '#end via_asset_files' | cut -f1 -d:)
+
+  tmp=$(mktemp)
+
+  cat CMakeLists.txt | head -n ${via_start} > "$tmp"
+
+  (
+    cd deps/ViaBackwards/common/src/main/resources/assets/viabackwards/data
+    git ls-files | grep ^mapping- | sed 's:\(.*\):  deps/ViaBackwards/common/src/main/resources/assets/viabackwards/data/\1:g' >> "$tmp"
+  )
+
+  cat CMakeLists.txt | tail -n +${via_end} >> "$tmp"
+
+  mv -f "$tmp" CMakeLists.txt
+)
