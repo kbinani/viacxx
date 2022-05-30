@@ -1,6 +1,9 @@
 #pragma once
 
-namespace ViaBackwards {
+#include <functional>
+#include <string>
+
+namespace viacxx {
 
 enum class Version : uint8_t {
   Version1_18 = 1,
@@ -21,9 +24,9 @@ class Backwards {
   Backwards() = delete;
 
 public:
-  using Converter = std::function<std::shared_ptr<mcfile::je::Block const>(std::shared_ptr<mcfile::je::Block const> const &)>;
+  using Converter = std::function<std::string(std::string const &)>;
 
   static Converter ComposeConverter(Version from, Version to);
 };
 
-} // namespace ViaBackwards
+} // namespace viacxx

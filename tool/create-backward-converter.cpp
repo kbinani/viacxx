@@ -81,7 +81,10 @@ static std::string Trim(std::string const &v) {
 std::string headerFormat = R"(
 #pragma once
 
-namespace ViaBackwards {
+#include <functional>
+#include <string>
+
+namespace viacxx {
 
 enum class Version : uint8_t {
 @{enum_definition}
@@ -91,22 +94,24 @@ class Backwards {
   Backwards() = delete;
 
 public:
-  using Converter = std::function<std::shared_ptr<mcfile::je::Block const>(std::shared_ptr<mcfile::je::Block const> const &)>;
+  using Converter = std::function<std::string(std::string const &)>;
 
   static Converter ComposeConverter(Version from, Version to);
 };
 
-} // namespace ViaBackwards
+} // namespace viacxx
 )";
 
 std::string classFormat = R"(
-namespace ViaBackwards {
+#include <via/backwards.hpp>
+
+namespace viacxx {
 namespace {
 
 struct CompositeConverter {
-  std::vector<Converter> fConverters;
+  std::vector<Backwards::Converter> fConverters;
 
-  std::shared_ptr<mcfile::je::Block const> operator()(std::shared_ptr<mcfile::je::Block const> const &input) const {
+  std::string operator()(std::string const &input) const {
     auto output = input;
     for (auto const &converter : fConverters) {
       output = converter(output);
@@ -115,35 +120,10 @@ struct CompositeConverter {
   }
 };
 
-CompoundTagPtr CompoundTagFromDataString(std::string const &data) {
-  using namespace std;
-  auto found = data.find('[');
-  auto tag = Compound();
-  if (found != string::npos && data.ends_with(']')) {
-    auto props = Compound();
-    tag->set("Name", String(data.substr(0, found)));
-    auto s = data.substr(found, data.size() - found - 1);
-    istringstream input(s);
-    for (string kv; getline(input, kv, ',');) {
-      auto equal = kv.find('=');
-      if (equal == string::npos) {
-        continue;
-      }
-      auto key = kv.substr(0, equal);
-      auto value = kv.substr(equal + 1);
-      props->set(key, String(value));
-    }
-    tag->set("Properties", props);
-  } else {
-    tag->set("Name", String(data));
-  }
-  return tag;
-}
-
 @{convert_function_definitions}
 
-Converter SelectConverter(Version from) {
-  static std::unordered_map<Version, Converter> const sConverters = {
+Backwards::Converter SelectConverter(Version from) {
+  static std::unordered_map<Version, Backwards::Converter> const sConverters = {
 @{converters_table}
   };
   if (auto found = sConverters.find(from); found != sConverters.end()) {
@@ -167,44 +147,19 @@ Backwards::Converter Backwards::ComposeConverter(Version from, Version to) {
   return composite;
 }
 
-} // namespace ViaBackwards
+} // namespace viacxx
 )";
 
 std::string emptyTableFunctionFormat = R"(
-std::shared_ptr<mcfile::je::Block const> Convert@{version_pair}(std::shared_ptr<mcfile::je::Block const> const &input) {
+std::string Convert@{version_pair}(std::string const &input) {
   return input;
 }
 )";
 
 std::string tableFunctionFormat = R"(
-std::shared_ptr<mcfile::je::Block const> Convert@{version_pair}(std::shared_ptr<mcfile::je::Block const> const &input) {
+std::unordered_map<std::string, std::string> const *CreateDedicatedConvertMap@{version_pair}() {
   using namespace std;
-  static unique_ptr<unordered_map<string, CompoundTagPtr> const> sDedicatedConvertMap(CreateDedicatedConvertMap@{version_pair}());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap@{version_pair}());
-
-  if (!input) {
-    return nullptr;
-  }
-
-  auto const &dedicated = *sDedicatedConvertMap;
-  auto const &rename = *sRenameConvertMap;
-
-  if (auto found = rename.find(input->fName); found != rename.end()) {
-    map<string, string> props(input->fProperties);
-    return make_shared<mcfile::je::Block const>(found->second, props);
-  }
-
-  auto str = input->toString();
-  if (auto found = dedicated.find(str); found != dedicated.end()) {
-    return mcfile::je::Block::FromCompoundTag(*found->second);
-  }
-
-  return input;
-}
-
-std::unordered_map<std::string, CompoundTagPtr> const *CreateDedicatedConvertMap@{version_pair}() {
-  using namespace std;
-  auto t = new unordered_map<string, CompoundTagPtr>();
+  auto t = new unordered_map<string, string>();
   auto &s = *t;
 @{dedicated_maps}
   return t;
@@ -216,6 +171,36 @@ std::unordered_map<std::string, std::string> const *CreateRenameConvertMap@{vers
   auto &s = *t;
 @{rename_maps}
   return t;
+}
+
+std::string Convert@{version_pair}(std::string const &input) {
+  using namespace std;
+  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap@{version_pair}());
+  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap@{version_pair}());
+
+  auto const &dedicated = *sDedicatedConvertMap;
+  auto const &rename = *sRenameConvertMap;
+
+  string name = input;
+  string props;
+  if (auto found = input.find('['); found != string::npos) {
+    name = input.substr(0, found);
+    props = input.substr(found + 1);
+  }
+
+  if (auto found = rename.find(name); found != rename.end()) {
+    if (props.empty()) {
+      return found->second;
+    } else {
+      return found->second + "[" + props + "]";
+    }
+  }
+
+  if (auto found = dedicated.find(input); found != dedicated.end()) {
+    return found->second;
+  }
+
+  return input;
 }
 )";
 } // namespace
@@ -346,7 +331,7 @@ int main(int argc, char *argv[]) {
         if (value.ends_with("[")) {
           rename << "s[\"" << key << "\"] = \"" << value.substr(0, value.size() - 1) << "\";" << endl;
         } else {
-          dedicated << "s[\"" << key << "\"] = CompoundTagFromDataString(\"" << value << "\");" << endl;
+          dedicated << "s[\"" << key << "\"] = \"" << value << "\";" << endl;
         }
       }
       string src = Replace(tableFunctionFormat, "@{rename_maps}", Indent(rename.str(), "  "));

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ViaBackwardsCxx)
+project(viacxx)
 
 if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
   set(CMAKE_CXX_STANDARD 20)
@@ -35,3 +35,6 @@ add_custom_command(
 add_custom_target(prepare-backward-converter
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/via/backward.hpp ${CMAKE_CURRENT_SOURCE_DIR}/src/backward.cxx
   SOURCES ${via_asset_files})
+
+add_library(viacxx STATIC src/backwards.cxx include/via/backwards.hpp)
+target_include_directories(viacxx PUBLIC include)
