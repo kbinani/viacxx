@@ -6022,7 +6022,7 @@ std::string Convert1_14To1_13_2(std::string const &input) {
   if (auto found = input.find('['); found != string::npos) {
     if (input.ends_with(']')) {
       name = input.substr(0, found);
-      props = input.substr(found + 1);
+      props = input.substr(found + 1, input.size() - found - 2);
     } else {
       // invalid data string format
       return input;
@@ -6088,7 +6088,7 @@ std::string Convert1_13_2To1_13(std::string const &input) {
   if (auto found = input.find('['); found != string::npos) {
     if (input.ends_with(']')) {
       name = input.substr(0, found);
-      props = input.substr(found + 1);
+      props = input.substr(found + 1, input.size() - found - 2);
     } else {
       // invalid data string format
       return input;
@@ -11871,7 +11871,7 @@ std::string Convert1_16To1_15(std::string const &input) {
   if (auto found = input.find('['); found != string::npos) {
     if (input.ends_with(']')) {
       name = input.substr(0, found);
-      props = input.substr(found + 1);
+      props = input.substr(found + 1, input.size() - found - 2);
     } else {
       // invalid data string format
       return input;
@@ -12608,7 +12608,7 @@ std::string Convert1_17To1_16_2(std::string const &input) {
   if (auto found = input.find('['); found != string::npos) {
     if (input.ends_with(']')) {
       name = input.substr(0, found);
-      props = input.substr(found + 1);
+      props = input.substr(found + 1, input.size() - found - 2);
     } else {
       // invalid data string format
       return input;
