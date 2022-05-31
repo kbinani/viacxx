@@ -12689,11 +12689,25 @@ Backwards::Converter SelectConverter(Version from) {
   }
 }
 
+std::string Identity(std::string const &input) {
+  return input;
+}
+
 } // namespace
 
 Backwards::Converter Backwards::ComposeConverter(Version from, Version to) {
+  int8_t vFrom = static_cast<int8_t>(from);
+  int8_t vTo = static_cast<int8_t>(to);
+
+  if (vFrom == vTo) {
+    return Identity;
+  }
+  if (vFrom == vTo + 1) {
+    return SelectConverter(from);
+  }
+
   CompositeConverter composite;
-  for (uint8_t v = static_cast<uint8_t>(from); v < static_cast<uint8_t>(to); v++) {
+  for (int8_t v = static_cast<int8_t>(from); v > static_cast<int8_t>(to); v--) {
     auto converter = SelectConverter(static_cast<Version>(v));
     if (!converter) {
       return nullptr;
