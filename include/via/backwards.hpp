@@ -22,10 +22,11 @@ enum class Version : int8_t {
 
 class Backwards {
   Backwards() = delete;
+  Backwards(Backwards const &) = delete;
+  Backwards(Backwards &&) = delete;
 
 public:
   using Converter = std::function<std::string(std::string const &)>;
-
   static Converter ComposeConverter(Version from, Version to);
 };
 

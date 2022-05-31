@@ -92,10 +92,11 @@ enum class Version : int8_t {
 
 class Backwards {
   Backwards() = delete;
+  Backwards(Backwards const &) = delete;
+  Backwards(Backwards &&) = delete;
 
 public:
   using Converter = std::function<std::string(std::string const &)>;
-
   static Converter ComposeConverter(Version from, Version to);
 };
 
@@ -357,7 +358,7 @@ std::string Convert@{version_pair}(std::string const &input) {
   if (auto found = input.find('['); found != string::npos) {
     if (input.ends_with(']')) {
       name = input.substr(0, found);
-      props = input.substr(found + 1);
+      props = input.substr(found + 1, input.size() - found - 2);
     } else {
       // invalid data string format
       return input;
