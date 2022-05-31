@@ -5465,36 +5465,11 @@ std::unordered_map<std::string, std::string> const *CreateDedicatedConvertMap1_1
   return t;
 }
 
-std::unordered_map<std::string, std::string> const *CreateRenameConvertMap1_13To1_12() {
-  using namespace std;
-  auto t = new unordered_map<string, string>();
-  auto &s = *t;
-
-  return t;
-}
-
 std::string Convert1_13To1_12(std::string const &input) {
   using namespace std;
-  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap1_13To1_12());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap1_13To1_12());
 
+  static unique_ptr<unordered_map<string, string> const> const sDedicatedConvertMap(CreateDedicatedConvertMap1_13To1_12());
   auto const &dedicated = *sDedicatedConvertMap;
-  auto const &rename = *sRenameConvertMap;
-
-  string name = input;
-  string props;
-  if (auto found = input.find('['); found != string::npos) {
-    name = input.substr(0, found);
-    props = input.substr(found + 1);
-  }
-
-  if (auto found = rename.find(name); found != rename.end()) {
-    if (props.empty()) {
-      return found->second;
-    } else {
-      return found->second + "[" + props + "]";
-    }
-  }
 
   if (auto found = dedicated.find(input); found != dedicated.end()) {
     return found->second;
@@ -6031,17 +6006,27 @@ std::unordered_map<std::string, std::string> const *CreateRenameConvertMap1_14To
 
 std::string Convert1_14To1_13_2(std::string const &input) {
   using namespace std;
-  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap1_14To1_13_2());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap1_14To1_13_2());
 
+  static unique_ptr<unordered_map<string, string> const> const sDedicatedConvertMap(CreateDedicatedConvertMap1_14To1_13_2());
   auto const &dedicated = *sDedicatedConvertMap;
+
+  if (auto found = dedicated.find(input); found != dedicated.end()) {
+    return found->second;
+  }
+
+  static unique_ptr<unordered_map<string, string> const> const sRenameConvertMap(CreateRenameConvertMap1_14To1_13_2());
   auto const &rename = *sRenameConvertMap;
 
   string name = input;
   string props;
   if (auto found = input.find('['); found != string::npos) {
-    name = input.substr(0, found);
-    props = input.substr(found + 1);
+    if (input.ends_with(']')) {
+      name = input.substr(0, found);
+      props = input.substr(found + 1);
+    } else {
+      // invalid data string format
+      return input;
+    }
   }
 
   if (auto found = rename.find(name); found != rename.end()) {
@@ -6050,10 +6035,6 @@ std::string Convert1_14To1_13_2(std::string const &input) {
     } else {
       return found->second + "[" + props + "]";
     }
-  }
-
-  if (auto found = dedicated.find(input); found != dedicated.end()) {
-    return found->second;
   }
 
   return input;
@@ -6091,17 +6072,27 @@ std::unordered_map<std::string, std::string> const *CreateRenameConvertMap1_13_2
 
 std::string Convert1_13_2To1_13(std::string const &input) {
   using namespace std;
-  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap1_13_2To1_13());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap1_13_2To1_13());
 
+  static unique_ptr<unordered_map<string, string> const> const sDedicatedConvertMap(CreateDedicatedConvertMap1_13_2To1_13());
   auto const &dedicated = *sDedicatedConvertMap;
+
+  if (auto found = dedicated.find(input); found != dedicated.end()) {
+    return found->second;
+  }
+
+  static unique_ptr<unordered_map<string, string> const> const sRenameConvertMap(CreateRenameConvertMap1_13_2To1_13());
   auto const &rename = *sRenameConvertMap;
 
   string name = input;
   string props;
   if (auto found = input.find('['); found != string::npos) {
-    name = input.substr(0, found);
-    props = input.substr(found + 1);
+    if (input.ends_with(']')) {
+      name = input.substr(0, found);
+      props = input.substr(found + 1);
+    } else {
+      // invalid data string format
+      return input;
+    }
   }
 
   if (auto found = rename.find(name); found != rename.end()) {
@@ -6110,10 +6101,6 @@ std::string Convert1_13_2To1_13(std::string const &input) {
     } else {
       return found->second + "[" + props + "]";
     }
-  }
-
-  if (auto found = dedicated.find(input); found != dedicated.end()) {
-    return found->second;
   }
 
   return input;
@@ -6162,36 +6149,11 @@ std::unordered_map<std::string, std::string> const *CreateDedicatedConvertMap1_1
   return t;
 }
 
-std::unordered_map<std::string, std::string> const *CreateRenameConvertMap1_15To1_14() {
-  using namespace std;
-  auto t = new unordered_map<string, string>();
-  auto &s = *t;
-
-  return t;
-}
-
 std::string Convert1_15To1_14(std::string const &input) {
   using namespace std;
-  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap1_15To1_14());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap1_15To1_14());
 
+  static unique_ptr<unordered_map<string, string> const> const sDedicatedConvertMap(CreateDedicatedConvertMap1_15To1_14());
   auto const &dedicated = *sDedicatedConvertMap;
-  auto const &rename = *sRenameConvertMap;
-
-  string name = input;
-  string props;
-  if (auto found = input.find('['); found != string::npos) {
-    name = input.substr(0, found);
-    props = input.substr(found + 1);
-  }
-
-  if (auto found = rename.find(name); found != rename.end()) {
-    if (props.empty()) {
-      return found->second;
-    } else {
-      return found->second + "[" + props + "]";
-    }
-  }
 
   if (auto found = dedicated.find(input); found != dedicated.end()) {
     return found->second;
@@ -11893,17 +11855,27 @@ std::unordered_map<std::string, std::string> const *CreateRenameConvertMap1_16To
 
 std::string Convert1_16To1_15(std::string const &input) {
   using namespace std;
-  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap1_16To1_15());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap1_16To1_15());
 
+  static unique_ptr<unordered_map<string, string> const> const sDedicatedConvertMap(CreateDedicatedConvertMap1_16To1_15());
   auto const &dedicated = *sDedicatedConvertMap;
+
+  if (auto found = dedicated.find(input); found != dedicated.end()) {
+    return found->second;
+  }
+
+  static unique_ptr<unordered_map<string, string> const> const sRenameConvertMap(CreateRenameConvertMap1_16To1_15());
   auto const &rename = *sRenameConvertMap;
 
   string name = input;
   string props;
   if (auto found = input.find('['); found != string::npos) {
-    name = input.substr(0, found);
-    props = input.substr(found + 1);
+    if (input.ends_with(']')) {
+      name = input.substr(0, found);
+      props = input.substr(found + 1);
+    } else {
+      // invalid data string format
+      return input;
+    }
   }
 
   if (auto found = rename.find(name); found != rename.end()) {
@@ -11912,10 +11884,6 @@ std::string Convert1_16To1_15(std::string const &input) {
     } else {
       return found->second + "[" + props + "]";
     }
-  }
-
-  if (auto found = dedicated.find(input); found != dedicated.end()) {
-    return found->second;
   }
 
   return input;
@@ -12624,17 +12592,27 @@ std::unordered_map<std::string, std::string> const *CreateRenameConvertMap1_17To
 
 std::string Convert1_17To1_16_2(std::string const &input) {
   using namespace std;
-  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap1_17To1_16_2());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap1_17To1_16_2());
 
+  static unique_ptr<unordered_map<string, string> const> const sDedicatedConvertMap(CreateDedicatedConvertMap1_17To1_16_2());
   auto const &dedicated = *sDedicatedConvertMap;
+
+  if (auto found = dedicated.find(input); found != dedicated.end()) {
+    return found->second;
+  }
+
+  static unique_ptr<unordered_map<string, string> const> const sRenameConvertMap(CreateRenameConvertMap1_17To1_16_2());
   auto const &rename = *sRenameConvertMap;
 
   string name = input;
   string props;
   if (auto found = input.find('['); found != string::npos) {
-    name = input.substr(0, found);
-    props = input.substr(found + 1);
+    if (input.ends_with(']')) {
+      name = input.substr(0, found);
+      props = input.substr(found + 1);
+    } else {
+      // invalid data string format
+      return input;
+    }
   }
 
   if (auto found = rename.find(name); found != rename.end()) {
@@ -12643,10 +12621,6 @@ std::string Convert1_17To1_16_2(std::string const &input) {
     } else {
       return found->second + "[" + props + "]";
     }
-  }
-
-  if (auto found = dedicated.find(input); found != dedicated.end()) {
-    return found->second;
   }
 
   return input;
@@ -12673,36 +12647,11 @@ std::unordered_map<std::string, std::string> const *CreateDedicatedConvertMap1_1
   return t;
 }
 
-std::unordered_map<std::string, std::string> const *CreateRenameConvertMap1_16_2To1_16() {
-  using namespace std;
-  auto t = new unordered_map<string, string>();
-  auto &s = *t;
-
-  return t;
-}
-
 std::string Convert1_16_2To1_16(std::string const &input) {
   using namespace std;
-  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap1_16_2To1_16());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap1_16_2To1_16());
 
+  static unique_ptr<unordered_map<string, string> const> const sDedicatedConvertMap(CreateDedicatedConvertMap1_16_2To1_16());
   auto const &dedicated = *sDedicatedConvertMap;
-  auto const &rename = *sRenameConvertMap;
-
-  string name = input;
-  string props;
-  if (auto found = input.find('['); found != string::npos) {
-    name = input.substr(0, found);
-    props = input.substr(found + 1);
-  }
-
-  if (auto found = rename.find(name); found != rename.end()) {
-    if (props.empty()) {
-      return found->second;
-    } else {
-      return found->second + "[" + props + "]";
-    }
-  }
 
   if (auto found = dedicated.find(input); found != dedicated.end()) {
     return found->second;

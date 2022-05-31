@@ -155,54 +155,6 @@ std::string Convert@{version_pair}(std::string const &input) {
   return input;
 }
 )";
-
-std::string tableFunctionFormat = R"(
-std::unordered_map<std::string, std::string> const *CreateDedicatedConvertMap@{version_pair}() {
-  using namespace std;
-  auto t = new unordered_map<string, string>();
-  auto &s = *t;
-@{dedicated_maps}
-  return t;
-}
-
-std::unordered_map<std::string, std::string> const *CreateRenameConvertMap@{version_pair}() {
-  using namespace std;
-  auto t = new unordered_map<string, string>();
-  auto &s = *t;
-@{rename_maps}
-  return t;
-}
-
-std::string Convert@{version_pair}(std::string const &input) {
-  using namespace std;
-  static unique_ptr<unordered_map<string, string> const> sDedicatedConvertMap(CreateDedicatedConvertMap@{version_pair}());
-  static unique_ptr<unordered_map<string, string> const> sRenameConvertMap(CreateRenameConvertMap@{version_pair}());
-
-  auto const &dedicated = *sDedicatedConvertMap;
-  auto const &rename = *sRenameConvertMap;
-
-  string name = input;
-  string props;
-  if (auto found = input.find('['); found != string::npos) {
-    name = input.substr(0, found);
-    props = input.substr(found + 1);
-  }
-
-  if (auto found = rename.find(name); found != rename.end()) {
-    if (props.empty()) {
-      return found->second;
-    } else {
-      return found->second + "[" + props + "]";
-    }
-  }
-
-  if (auto found = dedicated.find(input); found != dedicated.end()) {
-    return found->second;
-  }
-
-  return input;
-}
-)";
 } // namespace
 
 class Version {
@@ -334,9 +286,82 @@ int main(int argc, char *argv[]) {
           dedicated << "s[\"" << key << "\"] = \"" << value << "\";" << endl;
         }
       }
-      string src = Replace(tableFunctionFormat, "@{rename_maps}", Indent(rename.str(), "  "));
-      src = Replace(src, "@{dedicated_maps}", Indent(dedicated.str(), "  "));
-      src = Replace(src, "@{version_pair}", versionPair);
+      std::string dedicatedConverterMapFormat = R"(
+std::unordered_map<std::string, std::string> const *CreateDedicatedConvertMap@{version_pair}() {
+  using namespace std;
+  auto t = new unordered_map<string, string>();
+  auto &s = *t;
+@{dedicated_maps}
+  return t;
+}
+)";
+
+      string renameConverterMapFormat = R"(
+std::unordered_map<std::string, std::string> const *CreateRenameConvertMap@{version_pair}() {
+  using namespace std;
+  auto t = new unordered_map<string, string>();
+  auto &s = *t;
+@{rename_maps}
+  return t;
+}
+)";
+
+      ostringstream def;
+      auto dedicatedSrc = dedicated.str();
+      if (!dedicatedSrc.empty()) {
+        def << Replace(dedicatedConverterMapFormat, "@{dedicated_maps}", Indent(dedicatedSrc, "  "));
+      }
+      auto renameSrc = rename.str();
+      if (!renameSrc.empty()) {
+        def << Replace(renameConverterMapFormat, "@{rename_maps}", Indent(renameSrc, "  "));
+      }
+
+      def << R"(
+std::string Convert@{version_pair}(std::string const &input) {
+  using namespace std;
+)";
+      if (!dedicatedSrc.empty()) {
+        def << R"(
+  static unique_ptr<unordered_map<string, string> const> const sDedicatedConvertMap(CreateDedicatedConvertMap@{version_pair}());
+  auto const &dedicated = *sDedicatedConvertMap;
+
+  if (auto found = dedicated.find(input); found != dedicated.end()) {
+    return found->second;
+  }
+)";
+      }
+      if (!renameSrc.empty()) {
+        def << R"(
+  static unique_ptr<unordered_map<string, string> const> const sRenameConvertMap(CreateRenameConvertMap@{version_pair}());
+  auto const &rename = *sRenameConvertMap;
+
+  string name = input;
+  string props;
+  if (auto found = input.find('['); found != string::npos) {
+    if (input.ends_with(']')) {
+      name = input.substr(0, found);
+      props = input.substr(found + 1);
+    } else {
+      // invalid data string format
+      return input;
+    }
+  }
+
+  if (auto found = rename.find(name); found != rename.end()) {
+    if (props.empty()) {
+      return found->second;
+    } else {
+      return found->second + "[" + props + "]";
+    }
+  }
+)";
+      }
+
+      def << endl;
+      def << "  return input;" << endl;
+      def << "}" << endl;
+
+      string src = Replace(def.str(), "@{version_pair}", versionPair);
       convertFunctionDefinitions << src;
     }
   }
