@@ -143,6 +143,9 @@ Backwards::Converter Backwards::ComposeConverter(Version from, Version to) {
   int8_t vFrom = static_cast<int8_t>(from);
   int8_t vTo = static_cast<int8_t>(to);
 
+  if (vFrom < vTo) {
+    return nullptr;
+  }
   if (vFrom == vTo) {
     return Identity;
   }
